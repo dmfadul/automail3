@@ -47,25 +47,21 @@ def multi_send(subject_text, main_text):
         log("No course information.")
         return
     
-    
     course_name = course_info.get("course_name")
     doc_name = course_info.get("doc_name")
     class_name = course_info.get("class_name")
 
-    with open("course_curr.json", "r", encoding="utf-8") as f:
-        existing_data = json.load(f)
+    # with open("course_curr.json", "r", encoding="utf-8") as f:
+    #     existing_data = json.load(f)
     
-    if existing_data and existing_data.get("class_name") == class_name:
-        log("This course has already been processed. Restarting the sending process.")
-        sent_emails = existing_data.get("sent_emails", [])
-
-    else:
-        #  Initialize the course_info.json file
-        with open("course_curr.json", "w", encoding="utf-8") as f:
-            json.dump(course_info, f, indent=4, ensure_ascii=False)
-
-        sent_emails = []
-        course_info["sent_emails"] = []
+    # if existing_data and existing_data.get("class_name") == class_name:
+    #     log("This course has already been processed. Restarting the sending process.")
+    # else:
+    
+    #  Initialize the course_info.json file
+    course_info["sent_emails"] = []
+    with open("course_curr.json", "w", encoding="utf-8") as f:
+        json.dump(course_info, f, indent=4, ensure_ascii=False)
 
     try:
         session = Session()
@@ -73,7 +69,8 @@ def multi_send(subject_text, main_text):
     except Exception as e:
         log(f"Login failed: {e}")
         return
-       
+    
+    # sent_emails = existing_data.get("sent_emails", [])
     names_emails = get_emails()
     total = len(names_emails)
 
@@ -82,9 +79,9 @@ def multi_send(subject_text, main_text):
             log(f"{name} has no valid email address.")
             continue
         
-        if name in sent_emails:
-            log(f"{name} -- email already sent -- Skipping ({i+1}/{total})")
-            continue
+        # if name in sent_emails:
+        #     log(f"{name} -- email already sent -- Skipping ({i+1}/{total})")
+        #     continue
 
         email_address = email_lst[0] # only sending to the first email address for now
         log(f"{name} -- {email_address} ({i+1}/{total})")
