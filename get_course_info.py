@@ -30,7 +30,7 @@ def confirm_course_name(current_name):
         response = input(" ").strip().lower()
         if response == "s" or response == "":
             existing_names.append(unidecode(current_name))
-            with open("course_names.json", "w") as file:
+            with open("courses.json", "w") as file:
                 json.dump(existing_names, file, indent=4)
         else:
             print("Curso não cadastrado. Cancelando envio.")
@@ -60,20 +60,19 @@ def get_course_info():
 
         is_history = ("Historico" in text) and ("Escolar" in text)
 
-
-        print(is_history)
         if is_history:
             doc_name = "Historico"
-            match = re.search(r'CURSO DE\s+(.+?)(?:\s+C\.Hor\.:|\n)', text, re.IGNORECASE)   
+            match = re.search(r'CURSO DE\s+(.+?)(?:\s+C\.Hor\.:|\n)', text, re.DOTALL|re.IGNORECASE)   
         else:
             doc_name = "Certificado"
             course_pattern = r'"(.*?)"'
-            match = re.search(course_pattern, text)
+            match = re.search(course_pattern, text, re.DOTALL)
         
         if not match:
+            print("Curso não encontrado no documento.")
             return None      
         
-        course_name = match.group(1)
+        course_name = match.group(1).replace("\n", " ").strip()
         course_name = re.sub(r'\s+', ' ', course_name).strip()
         
         if not confirm_course_name(course_name):
