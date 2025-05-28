@@ -25,11 +25,11 @@ def confirm_course_name(current_name):
     with open("courses.json", "r") as file:
         existing_names = json.load(file)
 
-    if not current_name in existing_names:
-        print(f"O CURSO {current_name} NÃO ESTÁ CADASTRADO.\nCADASTRAR CURSO {current_name}? S/n", end=" ")
+    if not unidecode(current_name) in existing_names:
+        print(f"O CURSO {current_name} NÃO ESTÁ CADASTRADO.\nCADASTRAR O CURSO? S/n", end=" ")
         response = input(" ").strip().lower()
         if response == "s" or response == "":
-            existing_names.append(current_name)
+            existing_names.append(unidecode(current_name))
             with open("course_names.json", "w") as file:
                 json.dump(existing_names, file, indent=4)
         else:
