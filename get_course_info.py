@@ -58,23 +58,26 @@ def get_course_info():
             for page in reader.pages:
                 text += unidecode(page.extract_text())
 
+        is_history = ("Historico" in text) and ("Escolar" in text)
+
+
+        print(is_history)
+        if is_history:
+            doc_name = "Historico"
+            match = re.search(r'CURSO DE\s+(.+?)(?:\s+C\.Hor\.:|\n)', text, re.IGNORECASE)   
+        else:
+            doc_name = "Certificado"
+            course_pattern = r'"(.*?)"'
+            match = re.search(course_pattern, text)
         
-        course_pattern = r'"(.*?)"'
-        course_name = re.search(course_pattern, text).group(1)
+        if not match:
+            return None      
+        
+        course_name = match.group(1)
         course_name = re.sub(r'\s+', ' ', course_name).strip()
-        if course_name is None:
-            return None
         
         if not confirm_course_name(course_name):
             return None
-
-        is_certificado = ("no " in text) and ("dia" in text)
-        is_diploma = ("no " in text) and ("período " in text) and ("de " in text)
-
-        if is_certificado or is_diploma:
-            doc_name = "Certificado"
-        else:
-            doc_name = "Historico"
 
         class_name = get_class_name()
         if class_name is None:

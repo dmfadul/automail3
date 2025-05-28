@@ -1,6 +1,5 @@
 from multi_send import multi_send
 
-SUBJECT_TEXT = "Certidão de Conclusão de Curso - "
 MAIN_TEXT = ''
 
 
