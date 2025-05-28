@@ -38,7 +38,7 @@ def clear_annexes_names():
             os.rename(full_path, new_full_path)
 
 
-def multi_send(subject_text, main_text):
+def multi_send(main_text):
     clear_annexes_names()
     log("Starting multi-send process...")
 
@@ -85,6 +85,14 @@ def multi_send(subject_text, main_text):
 
         email_address = email_lst[0] # only sending to the first email address for now
         log(f"{name} -- {email_address} ({i+1}/{total})")
+
+        if doc_name == "Certificado":
+            subject_text = "Certidão de Conclusão de Curso - "
+        elif doc_name == "Historico":
+            subject_text = "Histórico Escolar do Curso - "
+        else:
+            log(f"{name} -- Unknown document type -- not sent.")
+            continue
 
         try:
             session.prepare_email(

@@ -5,4 +5,4 @@ MAIN_TEXT = ''
 
 
 if __name__ == "__main__":
-    multi_send(subject_text=SUBJECT_TEXT, main_text=MAIN_TEXT)
+    multi_send(main_text=MAIN_TEXT)
