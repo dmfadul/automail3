@@ -14,6 +14,7 @@ def log(msg):
 
 
 def clear_annexes_names():
+    existing_annexes = set()
     folder_path = "Annexes"
     for filename in os.listdir(folder_path):
         full_path = os.path.join(folder_path, filename)
@@ -32,14 +33,19 @@ def clear_annexes_names():
         new_filename = f"{cleaned_name}{ext}"
         new_full_path = os.path.join(folder_path, new_filename)
 
+        if not cleaned_name == "trmemail":
+            existing_annexes.add(cleaned_name)
+
         # Only rename if the name has changed
         if filename != new_filename:
             print(f"Renaming: {filename} -> {new_filename}")
             os.rename(full_path, new_full_path)
+        
+    return existing_annexes
 
 
 def multi_send(main_text):
-    clear_annexes_names()
+    existing_annexes = clear_annexes_names()
     log("Starting multi-send process...")
 
     course_info = get_course_info()
@@ -73,18 +79,27 @@ def multi_send(main_text):
     # sent_emails = existing_data.get("sent_emails", [])
     names_emails = get_emails()
     total = len(names_emails)
+    sent = 0
 
     for i, (name, email_lst) in enumerate(names_emails):
+        # Check if the name is in the email list
         if not email_lst:
-            log(f"{name} has no valid email address.")
+            log(f"{name} has no valid email address -- Skipping ({i+1}/{total}/{sent})")
+            continue
+
+        # Check if the name is on the existing annexes list
+        if name not in existing_annexes:
+            log(f"{name} -- No annex found -- Skipping ({i+1}/{total}/{sent})")
             continue
         
+        # # Check if the name is already sent
         # if name in sent_emails:
-        #     log(f"{name} -- email already sent -- Skipping ({i+1}/{total})")
+        #     log(f"{name} -- email already sent -- Skipping ({i+1}/{total}/{sent})")
         #     continue
 
         email_address = email_lst[0] # only sending to the first email address for now
-        log(f"{name} -- {email_address} ({i+1}/{total})")
+        sent += 1
+        log(f"{name} -- {email_address} ({i+1}/{total}/{sent})")
 
         if doc_name == "Certificado":
             subject_text = "Certidão de Conclusão de Curso - "
@@ -92,6 +107,7 @@ def multi_send(main_text):
             subject_text = "Histórico Escolar do Curso - "
         else:
             log(f"{name} -- Unknown document type -- not sent.")
+            sent -= 1
             continue
 
         try:
@@ -103,11 +119,13 @@ def multi_send(main_text):
 
             if session.attach_annex(f"{name}.pdf", doc_name):
                 log(f"{name} -- Erro no anexo -- não enviado.")
+                sent -= 1
                 session.reset()
                 continue
             
             if session.send():
                 log(f"{name} -- Erro no envio -- não enviado.")
+                sent -= 1
                 session.reset()
                 continue
 
@@ -121,4 +139,6 @@ def multi_send(main_text):
 
         except Exception as e:
             log(f"{name} -- Erro inesperado -- não enviado. {e}")            
+            sent -= 1
+
         
