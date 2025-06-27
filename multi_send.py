@@ -16,6 +16,7 @@ def log(msg):
 def clear_annexes_names():
     existing_annexes = set()
     folder_path = "Annexes"
+    restarting = False
     for filename in os.listdir(folder_path):
         full_path = os.path.join(folder_path, filename)
 
@@ -29,6 +30,11 @@ def clear_annexes_names():
         # Clean the filename
         cleaned_name = re.sub(r'\s+', ' ', name.strip())
 
+        # Skipt sent annexes
+        if cleaned_name.endswith("_sent"):
+            restarting = True
+            continue
+
         # Construct the new filename
         new_filename = f"{cleaned_name}{ext}"
         new_full_path = os.path.join(folder_path, new_filename)
@@ -40,11 +46,21 @@ def clear_annexes_names():
         if filename != new_filename:
             print(f"Renaming: {filename} -> {new_filename}")
             os.rename(full_path, new_full_path)
-        
+    
+    if restarting:
+        log(f"Restaring sending emails from where it stopped.")
     return existing_annexes
 
 
 def multi_send(main_text):
+    session = Session()
+    flag = _multi_send(session, main_text)
+    if flag == 0:
+        log("All emails sent successfully.")
+        session.end_session()
+
+
+def _multi_send(session, main_text):
     existing_annexes = clear_annexes_names()
     log("Starting multi-send process...")
 
@@ -56,13 +72,8 @@ def multi_send(main_text):
     course_name = course_info.get("course_name")
     doc_name = course_info.get("doc_name")
     class_name = course_info.get("class_name")
-
-    # with open("course_curr.json", "r", encoding="utf-8") as f:
-    #     existing_data = json.load(f)
     
-    # if existing_data and existing_data.get("class_name") == class_name:
-    #     log("This course has already been processed. Restarting the sending process.")
-    # else:
+    print("class_name:", class_name)
     
     #  Initialize the course_info.json file
     course_info["sent_emails"] = []
@@ -70,7 +81,6 @@ def multi_send(main_text):
         json.dump(course_info, f, indent=4, ensure_ascii=False)
 
     try:
-        session = Session()
         session.login_mail(credentials.login, credentials.passwd)
     except Exception as e:
         log(f"Login failed: {e}")
@@ -92,11 +102,6 @@ def multi_send(main_text):
             log(f"{name} -- No annex found -- Skipping ({i+1}/{total}/{sent})")
             continue
         
-        # # Check if the name is already sent
-        # if name in sent_emails:
-        #     log(f"{name} -- email already sent -- Skipping ({i+1}/{total}/{sent})")
-        #     continue
-
         email_address = email_lst[0] # only sending to the first email address for now
         sent += 1
         log(f"{name} -- {email_address} ({i+1}/{total}/{sent})")
@@ -137,8 +142,13 @@ def multi_send(main_text):
                 json.dump(data, f, indent=4, ensure_ascii=False)
                 f.truncate()
 
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            os.rename(
+                os.path.join(script_dir, "Annexes", f"{name}.pdf"),
+                os.path.join("Annexes", f"{name}_sent.pdf")
+            )
         except Exception as e:
             log(f"{name} -- Erro inesperado -- não enviado. {e}")            
             sent -= 1
-
-        
+            
+    return 0
