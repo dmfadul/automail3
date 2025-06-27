@@ -40,3 +40,29 @@ def clear_annexes_names():
             os.rename(full_path, new_full_path)
     
     return existing_annexes
+
+
+def check_annexes_folders():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    path = os.path.join(script_dir, "Annexes")
+
+    entries = os.listdir(path)
+    if not entries:
+        return 'empty'
+
+    folders = []
+    files = []
+
+    for name in entries:
+        full_path = os.path.join(path, name)
+        if os.path.isdir(full_path):
+            folders.append(name)
+        elif os.path.isfile(full_path):
+            files.append(name)
+
+    if folders and not files:
+        return folders
+    elif files and not folders:
+        return 'only_files'
+    else:
+        return 'mixed'

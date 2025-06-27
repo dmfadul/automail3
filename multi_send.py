@@ -9,9 +9,23 @@ from services import log, check_annexes_folders, clear_annexes_names
 
 
 def send_all(main_text):
-    check_annexes_folders()
+    folders = check_annexes_folders()
+    if folders == 'empty':
+        log("No annexes found. Please add annexes before sending emails.")
+        return
+    if folders == 'mixed':
+        log("Mixed content in Annexes folder. Either use folders or files.")
+        return
+    if folders == 'only_files':
+        multi_send(main_text)
+        return
+    
+    for folder in folders:
+        log(f"Processing folder: {folder}")
 
-def multi_send(main_text):
+    # TODO: move annexes addresses out of the functions, then use the annex_folder parameter on this for loop  
+
+def multi_send(main_text, annex_folder="Annexes"):
     log("Starting multi-send process...")
 
     session = Session()
@@ -19,7 +33,7 @@ def multi_send(main_text):
 
     flag = None
     while True:
-        flag = _multi_send(session, main_text)
+        flag = _multi_send(session, main_text, annex_folder)
         if flag == 0:
             log("All emails sent successfully.")
             session.end_session()
@@ -30,7 +44,7 @@ def multi_send(main_text):
             time.sleep(5)
             session = Session()  # reinitialize for the next loop
 
-def _multi_send(session, main_text):
+def _multi_send(session, main_text, annex_folder):
     existing_annexes = clear_annexes_names()
 
     course_info = get_course_info()
