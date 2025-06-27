@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import time
 import credentials
 from engine import Session
 from datetime import datetime
@@ -11,12 +12,10 @@ from get_course_info import get_course_info
 def log(msg):
     now = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
     print(f"{now} {msg}")
-
-
+    
 def clear_annexes_names():
     existing_annexes = set()
     folder_path = "Annexes"
-    restarting = False
     for filename in os.listdir(folder_path):
         full_path = os.path.join(folder_path, filename)
 
@@ -32,7 +31,6 @@ def clear_annexes_names():
 
         # Skipt sent annexes
         if cleaned_name.endswith("_sent"):
-            restarting = True
             continue
 
         # Construct the new filename
@@ -47,22 +45,31 @@ def clear_annexes_names():
             print(f"Renaming: {filename} -> {new_filename}")
             os.rename(full_path, new_full_path)
     
-    if restarting:
-        log(f"Restaring sending emails from where it stopped.")
     return existing_annexes
 
 
 def multi_send(main_text):
+    log("Starting multi-send process...")
+
     session = Session()
-    flag = _multi_send(session, main_text)
-    if flag == 0:
-        log("All emails sent successfully.")
-        session.end_session()
+    time.sleep(2)
+
+    flag = None
+    while True:
+        flag = _multi_send(session, main_text)
+        if flag == 0:
+            log("All emails sent successfully.")
+            session.end_session()
+            return 0
+        elif flag == 1:
+            log("An error occurred while sending emails. Retrying in 5 seconds...")
+            session.end_session()
+            time.sleep(5)
+            session = Session()  # reinitialize for the next loop
 
 
 def _multi_send(session, main_text):
     existing_annexes = clear_annexes_names()
-    log("Starting multi-send process...")
 
     course_info = get_course_info()
     if course_info is None:
@@ -150,5 +157,6 @@ def _multi_send(session, main_text):
         except Exception as e:
             log(f"{name} -- Erro inesperado -- não enviado. {e}")            
             sent -= 1
+            return 1
             
     return 0
