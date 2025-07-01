@@ -67,11 +67,11 @@ class Session:
         self.actions.send_keys(Keys.TAB).send_keys(text).perform()
 
 
-    def attach_annex(self, file_name, new_annex_name=None):
+    def attach_annex(self, file_name, annexes_path, new_annex_name=None):
         file_name =file_name if file_name.endswith(".pdf") else f"{file_name}.pdf"
         
         script_dir = os.path.dirname(os.path.abspath(__file__))
-        path_annex = os.path.join(script_dir, "Annexes", file_name)
+        path_annex = os.path.join(script_dir, annexes_path, file_name)
 
         if not os.path.exists(path_annex):
             return 1

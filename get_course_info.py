@@ -5,8 +5,9 @@ import PyPDF2
 from unidecode import unidecode
 
 
-def get_class_name():
-    with open('Annexes/trmemail.pdf', 'rb') as file:
+def get_class_name(annexes_path=None):
+    trmemail_path = os.path.join(annexes_path, "trmemail.pdf")
+    with open(trmemail_path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = reader.pages[0].extract_text()
 
@@ -39,8 +40,7 @@ def confirm_course_name(current_name):
     return True
 
 
-def get_course_info():
-    folder_path = "Annexes"
+def get_course_info(folder_path):
     files = os.listdir(folder_path)
 
     for file in files:
@@ -78,7 +78,7 @@ def get_course_info():
         if not confirm_course_name(course_name):
             return None
 
-        class_name = get_class_name()
+        class_name = get_class_name(folder_path)
         if class_name is None:
             return None
         

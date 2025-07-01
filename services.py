@@ -7,9 +7,8 @@ def log(msg):
     now = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
     print(f"{now} {msg}")
     
-def clear_annexes_names():
+def clear_annexes_names(folder_path):
     existing_annexes = set()
-    folder_path = "Annexes"
     for filename in os.listdir(folder_path):
         full_path = os.path.join(folder_path, filename)
 
@@ -43,6 +42,9 @@ def clear_annexes_names():
 
 
 def check_annexes_folders():
+    """
+    Check the main Annexes folder for the presence of folders and files.
+    """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     path = os.path.join(script_dir, "Annexes")
 

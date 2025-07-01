@@ -1,9 +1,11 @@
+import os
 import re
 import PyPDF2
 
 
-def get_emails():
-    with open('Annexes/trmemail.pdf', 'rb') as file:
+def get_emails(annexes_path):
+    trmemail_path = os.path.join(annexes_path, "trmemail.pdf")
+    with open(trmemail_path, 'rb') as file:
         reader = PyPDF2.PdfReader(file)
         text = ""
         for page in reader.pages:

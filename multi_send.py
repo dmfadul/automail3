@@ -22,11 +22,12 @@ def send_all(main_text):
     
     for folder in folders:
         log(f"Processing folder: {folder}")
-
-    # TODO: move annexes addresses out of the functions, then use the annex_folder parameter on this for loop  
+        multi_send(main_text, annex_folder=folder)
+        time.sleep(5)  # wait a bit before processing the next folder
 
 def multi_send(main_text, annex_folder=None):
-    annex_folder = annex_folder or "Annexes"
+    print("annes", annex_folder)
+    annex_folder = "Annexes" if annex_folder is None else os.path.join("Annexes", annex_folder)
     log("Starting multi-send process...")
 
     session = Session()
@@ -46,9 +47,9 @@ def multi_send(main_text, annex_folder=None):
             session = Session()  # reinitialize for the next loop
 
 def _multi_send(session, main_text, annex_folder):
-    existing_annexes = clear_annexes_names()
+    existing_annexes = clear_annexes_names(annex_folder)
 
-    course_info = get_course_info()
+    course_info = get_course_info(annex_folder)
     if course_info is None:
         log("No course information.")
         return
@@ -71,7 +72,7 @@ def _multi_send(session, main_text, annex_folder):
         return
     
     # sent_emails = existing_data.get("sent_emails", [])
-    names_emails = get_emails()
+    names_emails = get_emails(annex_folder)
     total = len(names_emails)
     sent = 0
 
@@ -106,7 +107,7 @@ def _multi_send(session, main_text, annex_folder):
                 recipient=email_address
                 )
 
-            if session.attach_annex(f"{name}.pdf", doc_name):
+            if session.attach_annex(f"{name}.pdf", annex_folder, new_annex_name=doc_name):
                 log(f"{name} -- Erro no anexo -- não enviado.")
                 sent -= 1
                 session.reset()
@@ -128,8 +129,8 @@ def _multi_send(session, main_text, annex_folder):
 
             script_dir = os.path.dirname(os.path.abspath(__file__))
             os.rename(
-                os.path.join(script_dir, "Annexes", f"{name}.pdf"),
-                os.path.join("Annexes", f"{name}_sent.pdf")
+                os.path.join(script_dir, annex_folder, f"{name}.pdf"),
+                os.path.join(annex_folder, f"{name}_sent.pdf")
             )
         except Exception as e:
             log(f"{name} -- Erro inesperado -- não enviado. {e}")            
