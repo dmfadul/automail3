@@ -25,7 +25,8 @@ def send_all(main_text):
 
     # TODO: move annexes addresses out of the functions, then use the annex_folder parameter on this for loop  
 
-def multi_send(main_text, annex_folder="Annexes"):
+def multi_send(main_text, annex_folder=None):
+    annex_folder = annex_folder or "Annexes"
     log("Starting multi-send process...")
 
     session = Session()

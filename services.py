@@ -4,7 +4,7 @@ import datetime
 
 
 def log(msg):
-    now = datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
+    now = datetime.datetime.now().strftime("[%Y-%m-%d %H:%M:%S]")
     print(f"{now} {msg}")
     
 def clear_annexes_names():
